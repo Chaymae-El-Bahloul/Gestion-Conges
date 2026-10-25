@@ -1,0 +1,4 @@
+Interface Employé :
+- Formulaire de demande de congé
+- Type de congé, dates, motif, pièce jointe
+- Suivi de l'état de la demande

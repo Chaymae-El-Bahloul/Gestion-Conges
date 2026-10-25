@@ -1,0 +1,4 @@
+Interface Directeur des Services :
+- Liste des demandes à signer
+- Affichage des détails
+- Signature ou refus avec commentaire

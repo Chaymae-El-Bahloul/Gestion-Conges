@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Congés - Connexion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-container">
+            <!-- Header bleu avec icône et titre -->
+            <div class="login-header">
+                <div class="header-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h1>Gestion des Congés</h1>
+                <p>Connectez-vous à votre espace</p>
+            </div>
+            
+            <!-- Formulaire de connexion -->
+            <div class="login-form">
+                {% if error %}
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {{ error }}
+                    </div>
+                {% endif %}
+                
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="input-group">
+                        <div class="input-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <input type="text" id="matricule" name="matricule" placeholder="Matricule" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <div class="input-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <input type="password" id="password" name="password" placeholder="Mot de passe" required>
+                    </div>
+                    
+                    <button type="submit" class="login-btn">
+                        <span>Se connecter</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Section comptes de test -->
+            <div class="test-accounts">
+                <div class="test-header">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Comptes de test</span>
+                </div>
+                <div class="account-list">
+                    <div class="account-item">
+                        <span class="role">Employé:</span>
+                        <span class="credentials">EMP001 / 123456</span>
+                    </div>
+                    <div class="account-item">
+                        <span class="role">RH:</span>
+                        <span class="credentials">RH001 / 123456</span>
+                    </div>
+                    <div class="account-item">
+                        <span class="role">Directeur:</span>
+                        <span class="credentials">DIR001 / 123456</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

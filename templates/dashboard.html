@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - {{ user_name if user_name else role|capitalize }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Barre de navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-file-alt"></i>
+                <span>Gestion des Congés</span>
+            </div>
+            <div class="nav-menu">
+                <a href="{{ url_for('dashboard') }}" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Tableau de bord</span>
+                </a>
+                {% if role == 'employe' %}
+                <a href="#demande-form" class="nav-item">
+                    <i class="fas fa-plus"></i>
+                    <span>Nouvelle demande</span>
+                </a>
+                {% endif %}
+                {% if role in ['rh', 'directeur'] %}
+                <a href="{{ url_for('liste_conges') }}" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Liste des congés</span>
+                </a>
+                <a href="{{ url_for('jours_feries') }}" class="nav-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>Jours fériés</span>
+                </a>
+                {% endif %}
+            </div>
+            <div class="nav-user">
+                <span class="user-name">{{ user_name }}</span>
+                <div class="user-dropdown">
+                    <i class="fas fa-chevron-down"></i>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('logout') }}">Déconnexion</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1>
+                <i class="fas fa-calendar-alt"></i>
+                Tableau de bord - {{ user_name if user_name else role|capitalize }}
+            </h1>
+            {% if role == 'employe' %}
+            <a href="#demande-form" class="btn-primary">
+                <i class="fas fa-plus"></i>
+                Nouvelle demande
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Statistiques -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.total }}</div>
+                    <div class="stat-label">Total demandes</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.en_attente }}</div>
+                    <div class="stat-label">En attente</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.approuvees }}</div>
+                    <div class="stat-label">Approuvées</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.refusees }}</div>
+                    <div class="stat-label">Refusées</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section des demandes -->
+        <div class="demandes-section">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-file-alt"></i>
+                    {% if role == 'employe' %}Mes demandes de congé{% else %}Gestion des demandes{% endif %}
+                </h2>
+            </div>
+
+            {% if demandes %}
+            <div class="demandes-table-container">
+                <table class="demandes-table">
+                    <thead>
+                        <tr>
+                            <th>Représentant / الممثل</th>
+                            <th>Type de congé / نوع الرخصة</th>
+                            <th>Date début / تاريخ البداية</th>
+                            <th>Date fin / تاريخ النهاية</th>
+                            <th>Jours ouvrés / عدد الأيام الفعلية</th>
+                            <th>État / الحالة</th>
+                            <th>Service</th>
+                            <th>Échelle</th>
+                            <th>Rang</th>
+                            <th>Téléphone</th>
+                            {% if role != 'employe' %}<th>Employé</th>{% endif %}
+                            {% if role in ['rh', 'directeur'] %}<th>Action</th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in demandes %}
+                        <tr>
+                            <td>{{ d.representant if d.representant else 'N/A' }}</td>
+                            <td>{{ d.type_conge }}</td>
+                            <td>{{ d.date_debut.strftime('%d/%m/%Y') if d.date_debut else '' }}</td>
+                            <td>{{ d.date_fin.strftime('%d/%m/%Y') if d.date_fin else '' }}</td>
+                            <td>{{ d.jours }}</td>
+                            <td>
+                                <span class="status-badge status-{{ d.etat.lower().replace(' ', '-') }}">
+                                    {{ d.etat }}
+                                </span>
+                            </td>
+                            <td>{{ d.user.service if d.user else '' }}</td>
+                            <td>{{ d.user.echell if d.user else '' }}</td>
+                            <td>{{ d.user.rang if d.user else '' }}</td>
+                            <td>{{ d.user.telephone if d.user else '' }}</td>
+                            {% if role != 'employe' %}<td>{{ d.user.matricule if d.user else 'N/A' }}</td>{% endif %}
+                            {% if role in ['rh', 'directeur'] %}
+                            <td>
+                                {% if d.etat == 'En attente' %}
+                                <form method="POST" action="{{ url_for('valider') }}" class="action-form">
+                                    <input type="hidden" name="matricule" value="{{ d.user.matricule if d.user else '' }}">
+                                    <input type="hidden" name="jours" value="{{ d.jours }}">
+                                    <button type="submit" name="action" value="valider" class="btn-success">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button type="submit" name="action" value="refuser" class="btn-danger">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                                {% elif d.etat == 'En attente signature' and role == 'directeur' %}
+                                <form method="POST" action="{{ url_for('valider') }}" class="action-form">
+                                    <input type="hidden" name="matricule" value="{{ d.user.matricule if d.user else '' }}">
+                                    <input type="hidden" name="jours" value="{{ d.jours }}">
+                                    <button type="submit" name="action" value="valider" class="btn-success">
+                                        <i class="fas fa-signature"></i> Signer
+                                    </button>
+                                    <button type="submit" name="action" value="refuser" class="btn-danger">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <p>Aucune demande trouvée</p>
+                {% if role == 'employe' %}
+                <a href="#demande-form" class="btn-primary">Créer ma première demande</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Formulaire de demande (pour employé) -->
+        {% if role == 'employe' %}
+        {% if error %}
+        <div class="error-message" style="margin-bottom:16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+        <div class="solde-conges">
+            <h3>Solde de congés restant :
+                <span class="solde-value {% if solde == 0 %}solde-epuise{% else %}solde-ok{% endif %}">
+                    {{ solde }} jour(s)
+                </span>
+            </h3>
+            {% if solde == 0 %}
+            <div class="error-message" style="margin-top:8px;">
+                <i class="fas fa-exclamation-triangle"></i>
+                Attention : Vous avez atteint votre quota annuel de congés !
+            </div>
+            {% endif %}
+        </div>
+        <div class="demande-form-section" id="demande-form">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-plus"></i>
+                    Nouvelle demande de congé
+                </h2>
+            </div>
+            <form method="POST" action="{{ url_for('demande') }}" class="demande-form">
+                <div class="form-group">
+                    <label>Nom :</label>
+                    <input type="text" value="{{ user_name }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Service :</label>
+                    <input type="text" value="{{ current_user.service or '' }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Échelle :</label>
+                    <input type="text" value="{{ current_user.echell or '' }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Rang :</label>
+                    <input type="text" value="{{ current_user.rang or '' }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Téléphone :</label>
+                    <input type="text" value="{{ current_user.telephone or '' }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="representant">Nom du représentant pendant l'absence / اسم الممثل أثناء الغياب :</label>
+                    <input type="text" id="representant" name="representant" required>
+                </div>
+                <div class="form-group">
+                    <label for="type_conge">Type de congé / نوع الرخصة :</label>
+                    <select id="type_conge" name="type_conge" required>
+                        <option value="Annuel">Annuel / السنوية</option>
+                        <option value="Maladie">Maladie / مرضية</option>
+                        <option value="Exceptionnel">Exceptionnel / استثنائية</option>
+                        <option value="Sans solde">Sans solde / بدون أجر</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="nb_jours">Nombre de jours souhaités / عدد الأيام المطلوبة :</label>
+                    <input type="number" id="nb_jours" name="nb_jours" min="1" max="30" required>
+                </div>
+                <div class="form-group">
+                    <label for="date_debut">Date de début / تاريخ البداية :</label>
+                    <input type="date" id="date_debut" name="date_debut" required>
+                </div>
+                <div class="form-group">
+                    <label for="date_fin">Date de fin (calculée automatiquement) / تاريخ النهاية :</label>
+                    <input type="date" id="date_fin" name="date_fin" readonly>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                    Demander un congé
+                </button>
+            </form>
+            {% if duree is defined %}
+            <div class="info-message" style="margin-top:20px;">
+                <i class="fas fa-info-circle"></i>
+                {% if nb_jours_souhaites is defined %}
+                    Jours souhaités : <b>{{ nb_jours_souhaites }}</b> | 
+                    Durée calculée : <b>{{ duree }}</b> jour(s) ouvré(s)
+                    {% if nb_jours_souhaites != duree %}
+                        <br><small style="color: #e74c3c;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            La différence est due aux weekends et jours fériés exclus du calcul
+                        </small>
+                    {% endif %}
+                {% else %}
+                    Durée calculée : <b>{{ duree }}</b> jour(s) ouvré(s)
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Lien vers l'historique -->
+        <div class="history-link">
+            <a href="{{ url_for('history') }}" class="btn-secondary">
+                <i class="fas fa-history"></i>
+                Voir l'historique de mes demandes
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Jours fériés (chargés dynamiquement depuis la base de données)
+        let joursFeries = [];
+        
+        // Charger les jours fériés depuis l'API
+        async function chargerJoursFeries() {
+            try {
+                const response = await fetch('/api/jours-feries');
+                const data = await response.json();
+                joursFeries = data.jours_feries.map(jf => jf.date);
+            } catch (error) {
+                console.log('Erreur lors du chargement des jours fériés:', error);
+                // Jours fériés par défaut si l'API échoue
+                joursFeries = [
+                    '2024-01-01', '2024-01-11', '2024-05-01', '2024-07-30',
+                    '2024-08-14', '2024-08-20', '2024-08-21', '2024-11-06', '2024-11-18',
+                    '2025-01-01', '2025-01-11', '2025-05-01', '2025-07-30',
+                    '2025-08-14', '2025-08-20', '2025-08-21', '2025-11-06', '2025-11-18'
+                ];
+            }
+        }
+
+        // Fonction pour vérifier si une date est un jour férié
+        function estJourFerie(date) {
+            const dateStr = date.toISOString().split('T')[0];
+            return joursFeries.includes(dateStr);
+        }
+
+        // Fonction pour vérifier si une date est un weekend
+        function estWeekend(date) {
+            const jour = date.getDay();
+            return jour === 0 || jour === 6; // 0 = dimanche, 6 = samedi
+        }
+
+        // Fonction pour calculer la date de fin
+        function calculerDateFin() {
+            const nbJours = parseInt(document.getElementById('nb_jours').value) || 0;
+            const dateDebut = document.getElementById('date_debut').value;
+            
+            if (nbJours <= 0 || !dateDebut) {
+                document.getElementById('date_fin').value = '';
+                return;
+            }
+
+            let date = new Date(dateDebut);
+            let joursComptes = 0;
+            let joursOuvres = 0;
+
+            while (joursOuvres < nbJours) {
+                if (!estWeekend(date) && !estJourFerie(date)) {
+                    joursOuvres++;
+                }
+                joursComptes++;
+                date.setDate(date.getDate() + 1);
+            }
+
+            // Reculer d'un jour car on a dépassé
+            date.setDate(date.getDate() - 1);
+            
+            const dateFin = date.toISOString().split('T')[0];
+            document.getElementById('date_fin').value = dateFin;
+        }
+
+        // Écouter les changements
+        document.getElementById('nb_jours').addEventListener('input', calculerDateFin);
+        document.getElementById('date_debut').addEventListener('change', calculerDateFin);
+
+        // Initialiser le calcul si des valeurs existent déjà
+        window.addEventListener('load', async function() {
+            await chargerJoursFeries();
+            if (document.getElementById('nb_jours').value && document.getElementById('date_debut').value) {
+                calculerDateFin();
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des jours fériés</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Barre de navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-file-alt"></i>
+                <span>Gestion des Congés</span>
+            </div>
+            <div class="nav-menu">
+                <a href="{{ url_for('dashboard') }}" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Tableau de bord</span>
+                </a>
+                <a href="{{ url_for('jours_feries') }}" class="nav-item active">
+                    <i class="fas fa-calendar"></i>
+                    <span>Jours fériés</span>
+                </a>
+            </div>
+            <div class="nav-user">
+                <span class="user-name">{{ session.get('name', '') }}</span>
+                <div class="user-dropdown">
+                    <i class="fas fa-chevron-down"></i>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('logout') }}">Déconnexion</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1>
+                <i class="fas fa-calendar-alt"></i>
+                Gestion des jours fériés
+            </h1>
+        </div>
+
+        <!-- Formulaire d'ajout -->
+        <div class="demandes-section">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-plus"></i>
+                    Ajouter un jour férié
+                </h2>
+            </div>
+            <form method="POST" action="{{ url_for('ajouter_jour_ferie') }}" class="demande-form">
+                <div class="form-group">
+                    <label for="date">Date :</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description :</label>
+                    <input type="text" id="description" name="description" placeholder="Ex: Nouvel an, Fête du travail..." required>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Ajouter le jour férié
+                </button>
+            </form>
+        </div>
+
+        <!-- Liste des jours fériés -->
+        <div class="demandes-section">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-list"></i>
+                    Liste des jours fériés
+                </h2>
+            </div>
+            {% if jours_feries %}
+            <div class="demandes-table-container">
+                <table class="demandes-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for jf in jours_feries %}
+                        <tr>
+                            <td>{{ jf.date.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ jf.description }}</td>
+                            <td>
+                                <a href="{{ url_for('supprimer_jour_ferie', id=jf.id) }}" class="btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce jour férié ?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-calendar"></i>
+                </div>
+                <p>Aucun jour férié configuré</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Retour au dashboard -->
+        <div class="history-link">
+            <a href="{{ url_for('dashboard') }}" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Retour au tableau de bord
+            </a>
+        </div>
+    </div>
+</body>
+</html> 

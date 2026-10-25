@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des employés en congé</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Barre de navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-file-alt"></i>
+                <span>Gestion des Congés</span>
+            </div>
+            <div class="nav-menu">
+                <a href="{{ url_for('dashboard') }}" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Tableau de bord</span>
+                </a>
+                <a href="{{ url_for('liste_conges') }}" class="nav-item active">
+                    <i class="fas fa-users"></i>
+                    <span>Liste des congés</span>
+                </a>
+                <a href="{{ url_for('jours_feries') }}" class="nav-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>Jours fériés</span>
+                </a>
+            </div>
+            <div class="nav-user">
+                <span class="user-name">{{ session.get('name', '') }}</span>
+                <div class="user-dropdown">
+                    <i class="fas fa-chevron-down"></i>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('logout') }}">Déconnexion</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1>
+                <i class="fas fa-users"></i>
+                Liste des employés en congé
+            </h1>
+            <div class="header-actions">
+                <button onclick="window.print()" class="btn-secondary">
+                    <i class="fas fa-print"></i>
+                    Imprimer
+                </button>
+                <button onclick="exportToExcel()" class="btn-secondary">
+                    <i class="fas fa-file-excel"></i>
+                    Exporter Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Congés en cours -->
+        <div class="conges-section">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-clock"></i>
+                    Congés en cours ({{ congés_en_cours|length }} employé(s))
+                </h2>
+                <span class="date-info">Date actuelle : {{ aujourd_hui.strftime('%d/%m/%Y') }}</span>
+            </div>
+
+            {% if congés_en_cours %}
+            <div class="table-container">
+                <table class="conges-table">
+                    <thead>
+                        <tr>
+                            <th>Employé</th>
+                            <th>Matricule</th>
+                            <th>Service</th>
+                            <th>Échelle</th>
+                            <th>Rang</th>
+                            <th>Téléphone</th>
+                            <th>Type de congé</th>
+                            <th>Date début</th>
+                            <th>Date fin</th>
+                            <th>Durée</th>
+                            <th>Représentant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for demande in congés_en_cours %}
+                        <tr class="conge-en-cours">
+                            <td>
+                                <div class="employee-info">
+                                    <strong>{{ demande.user.name }}</strong>
+                                </div>
+                            </td>
+                            <td>{{ demande.user.matricule }}</td>
+                            <td>{{ demande.user.service }}</td>
+                            <td>{{ demande.user.echell }}</td>
+                            <td>{{ demande.user.rang }}</td>
+                            <td>{{ demande.user.telephone }}</td>
+                            <td>
+                                <span class="type-badge type-{{ demande.type_conge.lower() }}">
+                                    {{ demande.type_conge }}
+                                </span>
+                            </td>
+                            <td>{{ demande.date_debut.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ demande.date_fin.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <span class="duree-badge">
+                                    {{ demande.jours }} jour(s)
+                                </span>
+                            </td>
+                            <td>
+                                <span class="representant-info">
+                                    {{ demande.representant if demande.representant else 'Non spécifié' }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <p>Aucun employé en congé actuellement</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Congés futurs -->
+        <div class="conges-section">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-calendar-alt"></i>
+                    Congés à venir ({{ congés_futurs|length }} employé(s))
+                </h2>
+            </div>
+
+            {% if congés_futurs %}
+            <div class="table-container">
+                <table class="conges-table">
+                    <thead>
+                        <tr>
+                            <th>Employé</th>
+                            <th>Matricule</th>
+                            <th>Service</th>
+                            <th>Échelle</th>
+                            <th>Rang</th>
+                            <th>Téléphone</th>
+                            <th>Type de congé</th>
+                            <th>Date début</th>
+                            <th>Date fin</th>
+                            <th>Durée</th>
+                            <th>Représentant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for demande in congés_futurs %}
+                        <tr class="conge-futur">
+                            <td>
+                                <div class="employee-info">
+                                    <strong>{{ demande.user.name }}</strong>
+                                </div>
+                            </td>
+                            <td>{{ demande.user.matricule }}</td>
+                            <td>{{ demande.user.service }}</td>
+                            <td>{{ demande.user.echell }}</td>
+                            <td>{{ demande.user.rang }}</td>
+                            <td>{{ demande.user.telephone }}</td>
+                            <td>
+                                <span class="type-badge type-{{ demande.type_conge.lower() }}">
+                                    {{ demande.type_conge }}
+                                </span>
+                            </td>
+                            <td>{{ demande.date_debut.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ demande.date_fin.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <span class="duree-badge">
+                                    {{ demande.jours }} jour(s)
+                                </span>
+                            </td>
+                            <td>
+                                <span class="representant-info">
+                                    {{ demande.representant if demande.representant else 'Non spécifié' }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <p>Aucun congé prévu</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function exportToExcel() {
+            // Créer une table temporaire pour l'export
+            const table = document.querySelector('.conges-table');
+            if (!table) return;
+            
+            let csv = 'Employé,Matricule,Service,Échelle,Rang,Téléphone,Type de congé,Date début,Date fin,Durée,Représentant\n';
+            
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const rowData = [];
+                cells.forEach(cell => {
+                    // Extraire le texte sans les balises HTML
+                    let text = cell.textContent.trim();
+                    // Nettoyer les espaces multiples
+                    text = text.replace(/\s+/g, ' ');
+                    rowData.push(`"${text}"`);
+                });
+                csv += rowData.join(',') + '\n';
+            });
+            
+            // Créer et télécharger le fichier
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'liste_conges.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html> 

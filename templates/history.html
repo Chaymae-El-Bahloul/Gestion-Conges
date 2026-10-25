@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Historique des demandes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <h2>Historique de mes demandes de congé</h2>
+        {% if demandes %}
+        <table class="demandes-table">
+            <tr>
+                <th>Date</th>
+                <th>Jours</th>
+                <th>État</th>
+            </tr>
+            {% for d in demandes %}
+            <tr>
+                <td>{{ d.date_creation if d.date_creation else 'N/A' }}</td>
+                <td>{{ d.jours }}</td>
+                <td>{{ d.etat }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <div class="no-demandes">
+            <p>Aucune demande trouvée</p>
+        </div>
+        {% endif %}
+        <a href="{{ url_for('dashboard') }}" class="btn-main">Retour au tableau de bord</a>
+    </div>
+</body>
+</html> 

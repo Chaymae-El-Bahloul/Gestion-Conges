@@ -1,0 +1,4 @@
+Interface RH :
+- Tableau de bord des demandes
+- Validation / Envoi au Directeur
+- Génération des décisions après signature
